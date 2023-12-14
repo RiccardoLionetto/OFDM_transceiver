@@ -2,7 +2,7 @@ function output = lfsr_training(output_length)
 % A linear feedback shift register (LFSR) which outputs a PN sequence of length output_length.
 % The current LFSR has a period length of 255, but the polynomial can easily be changed for a longer one.
 
-polynomial = [1 0 1 0 1 1 1 0]';
+polynomial = [1 0 1 1 1 0 0 0]';
 
 % All memories are initialized with ones
 state = ones(size(polynomial));
