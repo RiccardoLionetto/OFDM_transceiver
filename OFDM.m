@@ -5,17 +5,15 @@
 % - Operating mode: 'matlab' (generic MATLAB audio routines)
 % --------------------------- %
 
-% Git https: https://github.com/RiccardoLionetto/ofdm.git
-% GIt ssh: git@github.com:RiccardoLionetto/ofdm.git
 
-%close all,clear all
+close all,clear all
 
 %% configuration Values
 % Variables needed for:
 
 % ... loading an image to be transmitted
-image = imread("image_smallSize.jpeg"); % 'image_fullSize' to use the bigger version
-image = rgb2gray(image);
+image = imread("image_smallSize.jpeg"); % 'image_fullSize' to use the big version - 'image_smallSize' for small version - 'black_image' for black image
+image = rgb2gray(image); % to remove coloring: [W x H x 3] -> [W x H x 1]
 [n_rows, n_cols, n_ch] = size(image);
 pixel_stream = reshape(image, [n_rows *n_cols *n_ch], 1);
 bitstream = reshape(dec2bin(pixel_stream, 8).', 1, []);
@@ -32,11 +30,11 @@ conf.spacing = 5; % Spacing between carriers in [Hz]
 conf.ofdm_nsymbols = ceil(data_length/conf.carriers); % Number of OFDM tx symbols
 conf.f_s     = 48000;   % sampling rate  
 conf.os_factor = conf.f_s/(conf.spacing*conf.carriers);
-conf.Ncp = conf.os_factor*conf.carriers/8;
+conf.Ncp = 900;%conf.os_factor*conf.carriers/8;
 conf.train_length = conf.carriers;
 %conf.cpLength = ;
 conf.f_c     = 8000;
-conf.trainOccurrence = 8; % n° of symbols after which a new training sequence is added
+conf.trainOccurrence = 64; % n° of symbols after which a new training sequence is added
 h_hat = 0; % channel estimate (done using training)
 
 % ... to send preamble: single carrier
@@ -50,7 +48,7 @@ conf.os_factor_preamble  = conf.f_s/conf.f_sym;
 % ... addressing audio on matlab
 conf.bitsps     = 16;   % bits per audio sample
 conf.offset     = 0;
-conf.audiosystem = 'bypass'; % Values: 'matlab','native','bypass'
+conf.audiosystem = 'matlab'; % Values: 'matlab','native','bypass'
 
 % ADVANCED CORRECTIONS
 % Pseudo random transformation of bitstream
@@ -59,8 +57,11 @@ conf.pseudo_activation = 1; % 0 to deactivate
 conf.suffix = 0; % 1 to activate it
 conf.Ncsuffix = 0.05*conf.carriers*conf.os_factor;
 % Viterbi-Viterbi
-conf.ViterbiViterbi = 0; % 0 to deactivate it
+conf.ViterbiViterbi = 1; % 0 to deactivate it
+conf.carrierOffset = 0; % To simulate a carrier offset in reception
 
+
+% Generation of data and preamble and transmission
 
 % DATA ~ QPSK OFDM Symbol
 [tx_TrainData conf] = tx_ofdm(bitstream, conf);
@@ -190,8 +191,8 @@ for k=1:1
     
     conf.txbits = bitstream;
     [rxbits conf] = rx_ofdm(rxsignal,conf);
-    bit_errors = sum(rxbits ~= bitstream)/length(bitstream)
-
+    bit_error_rate = sum(rxbits ~= bitstream)/length(bitstream)
+    bit_error = sum(rxbits ~= bitstream)
 
     % ------------------------------------------------------------------ %
 % DISPLAY RECEIVED IMAGE
@@ -203,9 +204,9 @@ pixel_stream_reconstructed = bin2dec(num2str(pixel_stream_reconstructed)); % Con
 image_reconstructed = reshape(pixel_stream_reconstructed, [n_rows, n_cols, n_ch]);
 
 % Display the reconstructed image
-% figure;
-% imshow(uint8(image_reconstructed));
-% title('Reconstructed Image');
+figure;
+imshow(uint8(image_reconstructed));
+title('Reconstructed Image');
 
 % Compare the original and reconstructed images
 figure;

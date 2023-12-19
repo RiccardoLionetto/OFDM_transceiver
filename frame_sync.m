@@ -30,6 +30,9 @@ function beginning_of_data = frame_sync(rxsignal, conf)
 % title("rx signal after pulse shaping - time domain")
 
 %% 
+% Exclude the preamble from the carrier frequency offset
+time_rx = (0:1/conf.f_s:(length(rxsignal)-1)/conf.f_s);
+rxsignal = rxsignal .*exp(+2*1j*pi*(conf.carrierOffset)*time_rx);
 
 rxsignal = lowpass_preamble(rxsignal.', conf);
 pulse = rrc(conf.os_factor_preamble, conf.roll_off, conf.filterlength);
