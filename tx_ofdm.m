@@ -50,10 +50,11 @@ matrix_traindata = matrix_traindata(1:end-length(dumb_blocks));
 % --------------- STAGE D ---------------
 % Apply Over-sampled IFFT
 %matrix_traindata = osifft(matrix_traindata,conf.os_factor);%*80;
-mat_line = [];
+mat_line = []; %zeros(conf.ofdm_nsymbols, conf.carriers*conf.os_factor);
 for i=0:length(matrix_traindata)/conf.carriers -1
     mat = osifft(matrix_traindata((i*conf.carriers)+1:(i*conf.carriers)+conf.carriers),conf.os_factor)*80;%*80;
-    mat_line = [mat_line; mat];
+    %mat_line(i+1,:) = mat;% 
+    mat_line= [mat_line; mat];
 end
 matrix_traindata = mat_line;
 matrix_traindata = reshape(matrix_traindata, conf.carriers*conf.os_factor, []).';

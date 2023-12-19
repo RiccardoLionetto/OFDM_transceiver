@@ -19,7 +19,7 @@ pixel_stream = reshape(image, [n_rows *n_cols *n_ch], 1);
 bitstream = reshape(dec2bin(pixel_stream, 8).', 1, []);
 bitstream = bitstream - '0'; % Convert binary digits to a single sequence
 
-
+%bitstream = randi([0 1], 1, 500000); % LONG SEQUENCE DEBUG
 
 data_length = length(bitstream) / 2; % Number of QPSK data symbols
 
@@ -30,16 +30,16 @@ conf.spacing = 5; % Spacing between carriers in [Hz]
 conf.ofdm_nsymbols = ceil(data_length/conf.carriers); % Number of OFDM tx symbols
 conf.f_s     = 48000;   % sampling rate  
 conf.os_factor = conf.f_s/(conf.spacing*conf.carriers);
-conf.Ncp = 900;%conf.os_factor*conf.carriers/8;
+conf.Ncp = conf.os_factor*conf.carriers/8;
 conf.train_length = conf.carriers;
 %conf.cpLength = ;
 conf.f_c     = 8000;
-conf.trainOccurrence = 64; % n° of symbols after which a new training sequence is added
+conf.trainOccurrence = 65; % n° of symbols after which a new training sequence is added
 h_hat = 0; % channel estimate (done using training)
 
 % ... to send preamble: single carrier
 conf.f_sym   = 100;     % symbol rate
-conf.npreamble  = 200;
+conf.npreamble  = 100;
 conf.roll_off = 0.22;
 zero_crossing= 5;
 conf.filterlength = ceil(conf.os_factor) * zero_crossing;
@@ -57,17 +57,18 @@ conf.pseudo_activation = 1; % 0 to deactivate
 conf.suffix = 0; % 1 to activate it
 conf.Ncsuffix = 0.05*conf.carriers*conf.os_factor;
 % Viterbi-Viterbi
-conf.ViterbiViterbi = 1; % 0 to deactivate it
-conf.carrierOffset = 0; % To simulate a carrier offset in reception
+conf.ViterbiViterbi = 0; % 0 to deactivate it
+conf.carrierOffset = 0.1; % To simulate a carrier offset in reception
 
 
 % Generation of data and preamble and transmission
 
 % DATA ~ QPSK OFDM Symbol
+
 [tx_TrainData conf] = tx_ofdm(bitstream, conf);
 
 % PREAMBLE ~ BPSK Single carrier
-preamble = tx_preamble(conf);
+preamble = tx_preamble(conf)*3;
 %preamble = []; % DEBUG
 
 % Final sequence of transmission (after normalization)

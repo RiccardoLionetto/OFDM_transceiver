@@ -97,7 +97,7 @@ if conf.ViterbiViterbi == 1
 % Apply viterbi-viterbi algorithm
 for train_index = 1:size(H_hat, 1) % Loop over received training symbols
     theta_hat_train = angle(H_hat(train_index,:));
-    final_ch_estimation_matrix(ss,:) = theta_hat_train.*abs(H_hat(train_index,:));
+    final_ch_estimation_matrix(ss,:) = abs(H_hat(train_index,:)).*exp(1j*theta_hat_train);
     ss = ss+1;
     for index=(train_index-1)*conf.trainOccurrence+1:(train_index-1)*conf.trainOccurrence+conf.trainOccurrence
         if index > size(expanded_ch_matrix, 1)
@@ -131,7 +131,7 @@ for train_index = 1:size(H_hat, 1) % Loop over received training symbols
 
         % Phase correction (and magnitude from prev. ch symbol)
         if index ~= (train_index-1)*conf.trainOccurrence+1
-        theta_hat(index,:) = mod(0.01*theta.' + 0.99*prev_theta, 2*pi);
+        theta_hat(index,:) = mod(0.3*theta.' + 0.7*prev_theta, 2*pi);
         data_ch_corrected(index,:) = data_symbols(index,:) .* exp(-1j * theta_hat(index,:)) ./abs(H_hat(train_index,:));
         else
             % The estimation is taken directly from the last training symbol
@@ -202,17 +202,17 @@ end
 
 
 % Code to see how often training symbols should be sent
-figure
-hold on
-n_rows_plot = ceil(conf.trainOccurrence/4);
-for i=1:conf.trainOccurrence
-    subplot(n_rows_plot, 4, i);  % Create a 4x5 grid of subplotsdata_ch_corrected
-    plot(data_ch_corrected(i,:), '.');
-    ylim([-2 +2]);
-    xlim([-2 +2]);
-    %legend(i)
-end
-hold off
+% figure
+% hold on
+% n_rows_plot = ceil(conf.trainOccurrence/4);
+% for i=1:conf.trainOccurrence
+%     subplot(n_rows_plot, 4, i);  % Create a 4x5 grid of subplotsdata_ch_corrected
+%     plot(data_ch_corrected(i,:), '.');
+%     ylim([-2 +2]);
+%     xlim([-2 +2]);
+%     %legend(i)
+% end
+% hold off
 
 data_stream = reshape(data_ch_corrected.', 1, []);
 data_stream = data_stream(1:end-conf.npad);% remove pad added in transmission to have a even n° of symbols
@@ -250,6 +250,7 @@ if conf.pseudo_activation == 1
 % Eliminate pseudo-random transformation
     rxbits = bitxor(rxbits, conf.pseudo_sequence);
 end
-
+bitstream = conf.txbits;
+bit_error_rate = sum(rxbits ~= bitstream)/length(bitstream)
 
 end
