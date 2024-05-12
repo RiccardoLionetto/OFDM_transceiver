@@ -22,5 +22,5 @@ On one side this choice bring accessibility and cost-effectiveness, on the other
 
 ### Results
 - <b>Viterbi-Viterbi phase correction</b>: to highlight the positive contribution of this feature a carrier frequency offset was artificially forced in the received signal.
-![Viterbi-Viterbi correction](/img/ViterbiViterbi_Correction)
+![Viterbi-Viterbi correction](/img/ViterbiViterbi_Correction.png)
 
